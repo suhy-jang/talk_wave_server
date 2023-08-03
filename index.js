@@ -15,8 +15,18 @@ const io = socketIo(server, {
 io.on('connection', (socket) => {
   console.log('User connected');
 
+  socket.on('typing', (message) => {
+    console.log('user is typing');
+    socket.broadcast.emit('userTyping', message);
+  });
+
+  socket.on('stopTyping', (message) => {
+    console.log('user stopped typing');
+    socket.broadcast.emit('userStoppedTyping', message);
+  });
+
   socket.on('sendMessage', (message) => {
-    console.log(`send message: ${message}`);
+    // console.log(`send message: ${message}`);
     io.emit('receiveMessage', message);
   });
 
