@@ -13,15 +13,17 @@ const io = socketIo(server, {
 });
 
 io.on('connection', (socket) => {
-  console.log('User connected');
+  console.log('User connected', socket.id);
+
+  socket.broadcast.emit('userJoined', `${socket.id} has joined the chat!`);
 
   socket.on('typing', (message) => {
-    console.log('user is typing');
+    // console.log('user is typing');
     socket.broadcast.emit('userTyping', message);
   });
 
   socket.on('stopTyping', (message) => {
-    console.log('user stopped typing');
+    // console.log('user stopped typing');
     socket.broadcast.emit('userStoppedTyping', message);
   });
 
@@ -31,7 +33,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    console.log('User disconnected', socket.id);
+
+    socket.broadcast.emit('userLeft', `${socket.id} has left the chat!`);
   });
 });
 
