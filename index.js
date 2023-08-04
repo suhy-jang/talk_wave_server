@@ -25,15 +25,27 @@ io.on('connection', (socket) => {
   socket.on('stopTyping', (message) => {
     // console.log('user stopped typing');
     socket.broadcast.emit('userStoppedTyping', message);
+    // socket.disconnect(true);
   });
 
-  socket.on('sendMessage', (message) => {
+  socket.on('sendMessage', (message, callback) => {
     // console.log(`send message: ${message}`);
-    io.emit('receiveMessage', message);
+    try {
+      io.emit('receiveMessage', message);
+
+      // callback({
+      //   error: 'An error occurred while sending the message.',
+      // });
+    } catch (error) {
+      console.error('Error in sendMessage', error);
+      callback({
+        error: 'An unexpected error occurred.',
+      });
+    }
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected', socket.id);
+    // console.log('User disconnected', socket.id);
 
     socket.broadcast.emit('userLeft', `${socket.id} has left the chat!`);
   });
