@@ -9,21 +9,9 @@ const handleStopTyping = ({ socket, message }) => {
   // socket.disconnect(true);
 };
 
-const handleSendMessage = ({ io, socket, message }) => {
-  // console.log(`send message: ${message}`);
-  try {
-    io.emit('receiveMessage', message);
-
-    // callback({
-    //   error: 'An error occurred while sending the message.',
-    // });
-  } catch (error) {
-    console.error('Error in sendMessage', error);
-    socket.emit('error', 'An unexpected error occurred.');
-    // callback({
-    //   error: 'An unexpected error occurred.',
-    // });
-  }
+const handleSendMessage = ({ io, message }) => {
+  console.log(`send message: ${message}`);
+  io.emit('receiveMessage', message);
 };
 
 const handleDisconnect = ({ socket }) => {
