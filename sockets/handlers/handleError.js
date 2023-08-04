@@ -1,5 +1,7 @@
+const devLog = require('../../utils/loggers');
+
 const handleError = (socket, error) => {
-  console.error('Caught socket error', error);
+  devLog('Caught socket error', error);
   socket.emit('error', 'An unexpected error occurred.');
 };
 
