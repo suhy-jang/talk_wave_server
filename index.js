@@ -1,9 +1,24 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const cors = require('cors');
+const authRoutes = require('./routes/auth');
 const socketEvents = require('./sockets/events');
 
 const app = express();
+
+app.use(express.json());
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200,
+    methods: ['GET', 'POST', 'HEAD', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
+  })
+);
+
+app.use('/auth', authRoutes);
+
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
