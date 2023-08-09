@@ -6,6 +6,7 @@ const users = [];
 
 const findUserById = (id) => users.find((user) => user.id === id);
 
+// TODO: OAuth (Passport)
 exports.signup = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
