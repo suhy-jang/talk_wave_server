@@ -4,12 +4,12 @@ const {
   handleSendMessage,
   handleDisconnect,
 } = require('./handlers/messageHandlers');
-const errorHandlingMiddleware = require('./middlewares/errorHandlingMiddleware');
+const errorHandler = require('./middlewares/errorHandler');
 const { guardRun } = require('./handlers/handleError');
 const devLog = require('../utils/loggers');
 
 module.exports = function (io) {
-  io.use(errorHandlingMiddleware);
+  io.use(errorHandler);
 
   io.on('connection', (socket) => {
     devLog('User connected', socket.id);

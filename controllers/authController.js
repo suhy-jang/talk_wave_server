@@ -9,25 +9,34 @@ const findUserById = (id) => users.find((user) => user.id === id);
 exports.signup = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    // Returns an array of objects containing key-value pairs such as
+    // type, value, msg, path, and location
+    // to detail the validation errors.
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { id, password } = req.body;
+  const { id, username, password } = req.body;
 
   if (findUserById(id)) {
     return res.status(400).json({ errors: 'Id already exists' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
 
   const user = {
     id,
+    username,
     password: hashedPassword,
   };
 
   users.push(user); // should be changed
 
-  req.status(201).json({ userId: user.id });
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    expiresIn: '1h',
+  });
+
+  res.status(201).json({ token, user });
 };
 
 exports.login = async (req, res) => {
@@ -44,11 +53,30 @@ exports.login = async (req, res) => {
     return res.status(401).json({ errors: 'Invalid credentials' });
   }
 
-  // TODO: secret key setting
-
-  const token = jwt.sign({ userId: user.id }, 'secret_key', {
+  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
     expiresIn: '1h',
   });
 
-  res.status(200).json({ token });
+  res.status(200).json({ token, user });
+};
+
+exports.verify = async (req, res) => {
+  const token = req.body.token;
+  if (!token) {
+    return res.status(400).json({ isValid: false, error: 'Token is required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    const user = findUserById(userId);
+    if (!user) {
+      return res.status(404).json({ isValid: false, error: 'User not found' });
+    }
+    // TODO: remove password from the user response
+    return res.json({ isValid: true, user: user });
+  } catch (error) {
+    return res.status(400).json({ isValid: false, error: 'Invalid token' });
+  }
 };

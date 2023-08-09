@@ -2,8 +2,15 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
+const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const socketEvents = require('./sockets/events');
+
+const envFile =
+  process.env.NODE_ENV === 'production'
+    ? './config/.env.production'
+    : './config/.env.development';
+dotenv.config({ path: envFile });
 
 const app = express();
 
