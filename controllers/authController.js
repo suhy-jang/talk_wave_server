@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
+const logger = require('../utils/loggers');
 
 const users = [];
 
@@ -37,6 +38,7 @@ exports.signup = async (req, res) => {
     expiresIn: '1h',
   });
 
+  logger.info('User signed up with id: ' + user.id);
   res.status(201).json({ token, user });
 };
 
@@ -58,6 +60,7 @@ exports.login = async (req, res) => {
     expiresIn: '1h',
   });
 
+  logger.info('User logged in with id: ' + user.id);
   res.status(200).json({ token, user });
 };
 
@@ -75,6 +78,7 @@ exports.verify = async (req, res) => {
     if (!user) {
       return res.status(404).json({ isValid: false, error: 'User not found' });
     }
+    logger.info('User account verified: ' + user.id);
     // TODO: remove password from the user response
     return res.json({ isValid: true, user: user });
   } catch (error) {

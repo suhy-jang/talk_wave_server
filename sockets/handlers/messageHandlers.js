@@ -1,22 +1,22 @@
-const devLog = require('../../utils/loggers');
+const logger = require('../../utils/loggers');
 
 const handleTyping = ({ socket, message }) => {
-  devLog('user is typing');
+  logger('user is typing');
   socket.broadcast.emit('userTyping', message);
 };
 
 const handleStopTyping = ({ socket, message }) => {
-  devLog('user stopped typing');
+  logger('user stopped typing');
   socket.broadcast.emit('userStoppedTyping', message);
 };
 
 const handleSendMessage = ({ io, message }) => {
-  devLog(`send message: ${message}`);
+  logger(`send message: ${message}`);
   io.emit('receiveMessage', message);
 };
 
 const handleDisconnect = ({ socket }) => {
-  devLog('User disconnected', socket.id);
+  logger('User disconnected', socket.id);
 
   socket.broadcast.emit('userLeft', `${socket.id} has left the chat!`);
 };

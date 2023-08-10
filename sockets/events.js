@@ -6,13 +6,13 @@ const {
 } = require('./handlers/messageHandlers');
 const errorHandler = require('./middlewares/errorHandler');
 const { guardRun } = require('./handlers/handleError');
-const devLog = require('../utils/loggers');
+const logger = require('../utils/loggers');
 
 module.exports = function (io) {
   io.use(errorHandler);
 
   io.on('connection', (socket) => {
-    devLog('User connected', socket.id);
+    logger.info('User connected', socket.id);
 
     socket.broadcast.emit('userJoined', `${socket.id} has joined the chat!`);
 

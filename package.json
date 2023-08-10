@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=production nodemon index.js",
+    "start": "nodemon index.js",
     "dev": "NODE_ENV=development nodemon index.js"
   },
   "author": "",
@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.1",
     "morgan": "^1.10.0",
     "nodemon": "^3.0.1",
+    "redis": "^4.6.7",
     "socket.io": "^4.7.2",
     "winston": "^3.10.0"
   }

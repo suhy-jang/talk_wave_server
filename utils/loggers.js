@@ -1,7 +1,12 @@
-function devLog(...params) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(...params);
-  }
-}
+const winston = require('winston');
 
-module.exports = devLog;
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: './logs/logfile.log' }),
+  ],
+});
+
+module.exports = logger;
