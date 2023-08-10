@@ -6,8 +6,9 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
+const mongoose = require('mongoose');
 
-const authRoutes = require('./routes/auth');
+const router = require('./routes/index');
 const socketEvents = require('./sockets/events');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/loggers');
@@ -18,6 +19,11 @@ const envFile =
     ? './config/.env.development'
     : './config/.env.production';
 dotenv.config({ path: envFile });
+
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -47,7 +53,7 @@ app.use(
 app.use(morgan('combined'));
 app.use(limiter);
 
-app.use('/auth', authRoutes);
+app.use('/', router);
 app.use(errorHandler);
 
 const server = http.createServer(app);
