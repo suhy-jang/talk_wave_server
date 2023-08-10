@@ -17,7 +17,7 @@ exports.signup = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { id, username, password } = req.body;
+  const { id, name, password } = req.body;
 
   if (findUserById(id)) {
     return res.status(400).json({ errors: 'Id already exists' });
@@ -28,7 +28,7 @@ exports.signup = async (req, res) => {
 
   const user = {
     id,
-    username,
+    name,
     password: hashedPassword,
   };
 

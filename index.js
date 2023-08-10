@@ -6,13 +6,12 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const { createClient } = require('redis');
 
 const authRoutes = require('./routes/auth');
 const socketEvents = require('./sockets/events');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/loggers');
+const { redisStore } = require('./utils/redisConfig');
 
 const envFile =
   process.env.NODE_ENV === 'development'
@@ -26,16 +25,6 @@ const limiter = rateLimit({
 });
 
 const app = express();
-
-// Initialize client.
-const redisClient = createClient();
-redisClient.connect().catch(logger.error);
-
-// Initialize store.
-const redisStore = new RedisStore({
-  client: redisClient,
-  prefix: 'myapp:',
-});
 
 // Initialize sesssion storage.
 app.use(
