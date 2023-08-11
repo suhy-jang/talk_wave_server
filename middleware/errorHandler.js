@@ -17,7 +17,7 @@ const routeNotFound = (req, res, next) => {
 // Handle 500 Server Error
 const serverInternalError = (err, req, res, next) => {
   logger.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send({ errors: [{ msg: err.message }] });
 };
 
 module.exports = { methodNotAllowed, routeNotFound, serverInternalError };

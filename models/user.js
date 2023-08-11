@@ -5,7 +5,13 @@ const userSchema = new mongoose.Schema(
     id: { type: String, unique: true },
     name: String,
     password: String,
-    channels: [
+    createdChannels: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Channel',
+      },
+    ],
+    subscribedChannels: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Channel',
