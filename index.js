@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 
 const router = require('./routes/index');
 const socketEvents = require('./sockets/events');
-const errorHandler = require('./middleware/errorHandler');
+const errorHandlers = require('./middleware/errorHandler');
 const logger = require('./utils/loggers');
 const { redisStore } = require('./utils/redisConfig');
 
@@ -54,7 +54,9 @@ app.use(morgan('combined'));
 app.use(limiter);
 
 app.use('/', router);
-app.use(errorHandler);
+app.use(errorHandlers.methodNotAllowed); // Handle 405
+app.use(errorHandlers.routeNotFound); // Handle 404
+app.use(errorHandlers.serverInternalError); // Handle 500
 
 const server = http.createServer(app);
 const io = socketIo(server, {
