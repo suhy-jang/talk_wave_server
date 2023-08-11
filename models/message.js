@@ -1,17 +1,21 @@
 const mongoose = require('mongoose');
 
-const messageSchema = new mongoose.Schema({
-  content: String,
-  date: Date,
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+const messageSchema = new mongoose.Schema(
+  {
+    content: String,
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    channel_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Channel',
+      required: true,
+    },
   },
-  channel_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Channel',
-  },
-});
+  { timestamps: true }
+);
 
 const Message = mongoose.model('Message', messageSchema);
 

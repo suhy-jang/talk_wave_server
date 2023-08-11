@@ -1,4 +1,4 @@
-const Channel = require('../models/channel');
+const { User, Channel } = require('../models');
 const generateKey = require('../utils/generateKey');
 const logger = require('../utils/loggers');
 
@@ -14,9 +14,13 @@ exports.createChannel = async (req, res) => {
   const { name, requiresKey } = req.body;
 
   let key = requiresKey ? generateKey() : null;
+
+  const user = await User.findOne({ id: req.user.userId });
   const channel = new Channel({
     name,
     key,
+    creator: user._id,
+    users: [user._id],
   });
 
   await channel.save();
