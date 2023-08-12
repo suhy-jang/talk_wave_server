@@ -1,9 +1,14 @@
-const { handleError } = require('../handlers/handleError');
+const logger = require('../../utils/loggers');
 
-module.exports = (socket, next) => {
+const errorHandler = (socket, next) => {
   socket.on('error', (error) => {
-    handleError(socket, error);
+    logger.error('Caught socket error', error);
+    if (socket) {
+      socket.emit('error', 'An unexpected error occurred.');
+    }
   });
 
   next();
 };
+
+module.exports = errorHandler;

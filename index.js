@@ -25,11 +25,6 @@ mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true,
 });
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // limit each IP to 100 requests per windowMs
-});
-
 const app = express();
 
 // Initialize sesssion storage.
@@ -44,14 +39,22 @@ app.use(
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN, // TODO: variabilization
+    origin: process.env.CLIENT_ORIGIN,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'HEAD', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   })
 );
 app.use(morgan('combined'));
-app.use(limiter);
+
+if (process.env.NODE_ENV !== 'development') {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // limit each IP to 100 requests per windowMs
+  });
+
+  app.use(limiter);
+}
 
 app.use('/', router);
 app.use(errorHandlers.methodNotAllowed); // Handle 405

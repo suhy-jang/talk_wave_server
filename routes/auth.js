@@ -8,13 +8,21 @@ const router = express.Router();
 
 router.post(
   '/signup',
-  [body('id'), body('password').isLength({ min: 5 }), validateRequest],
+  [
+    body('username').isLength({ min: 4 }),
+    body('password').isLength({ min: 5 }),
+    validateRequest,
+  ],
   guardRun(signup)
 );
 
 router.post(
   '/login',
-  [body('id'), body('password').isLength({ min: 5 }), validateRequest],
+  [
+    body('username').isLength({ min: 4 }),
+    body('password').isLength({ min: 5 }),
+    validateRequest,
+  ],
   guardRun(login)
 );
 

@@ -1,15 +1,13 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const logger = require('../utils/loggers');
-
-const findUserById = async (id) => await User.findOne({ id });
+const { generateToken, verifyToken } = require('../utils/jwt');
 
 // TODO: OAuth (Passport)
 exports.signup = async (req, res) => {
-  const { id, name, password } = req.body;
+  const { username, name, password } = req.body;
 
-  if (await findUserById(id)) {
+  if (await User.findOne({ username })) {
     return res.status(400).json({ errors: 'Id already exists' });
   }
 
@@ -17,36 +15,36 @@ exports.signup = async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
   const user = new User({
-    id,
+    username,
     name,
     password: hashedPassword,
   });
 
   await user.save();
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
-  });
+  const token = generateToken(user._id);
 
-  logger.info('User signed up with id: ' + user.id);
-  res.status(201).json({ token, user });
+  const { password: _, ...userWithoutPassword } = user.toObject();
+
+  logger.info('User signed up with id: ' + userWithoutPassword.id);
+  res.status(201).json({ token, user: userWithoutPassword });
 };
 
 exports.login = async (req, res) => {
-  const { id, password } = req.body;
+  const { username, password } = req.body;
 
-  const user = await findUserById(id);
+  const user = await User.findOne({ username });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ errors: 'Invalid credentials' });
   }
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
-  });
+  const token = generateToken(user._id);
 
-  logger.info('User logged in with id: ' + user.id);
-  res.status(200).json({ token, user });
+  const { password: _, ...userWithoutPassword } = user.toObject();
+
+  logger.info('User logged in with id: ' + userWithoutPassword.id);
+  res.status(200).json({ token, user: userWithoutPassword });
 };
 
 exports.verify = async (req, res) => {
@@ -58,18 +56,20 @@ exports.verify = async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token);
     const userId = decoded.userId;
 
-    const user = await findUserById(userId);
+    const user = await User.findOne({ _id: userId });
     if (!user) {
       return res
         .status(404)
         .json({ isValid: false, errors: [{ msg: 'User not found' }] });
     }
-    logger.info('User account verified: ' + user.id);
-    // TODO: remove password from the user response
-    return res.json({ isValid: true, user: user });
+
+    const { password: _, ...userWithoutPassword } = user.toObject();
+
+    logger.info('User account verified: ' + userWithoutPassword.id);
+    return res.json({ isValid: true, user: userWithoutPassword });
   } catch (error) {
     return res
       .status(400)

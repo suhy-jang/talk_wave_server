@@ -11,7 +11,7 @@ exports.channels = async (req, res) => {
 };
 
 exports.subscribedChannels = async (req, res) => {
-  const user = await User.findOne({ id: req.user.userId });
+  const user = await User.findOne({ _id: req.user.userId });
   const subscribedChannels = user.subscribedChannels;
   res.status(200).json({ subscribedChannels });
 };
@@ -21,7 +21,7 @@ exports.createChannel = async (req, res) => {
 
   let key = requiresKey ? generateKey() : null;
 
-  const user = await User.findOne({ id: req.user.userId });
+  const user = await User.findOne({ _id: req.user.userId });
   if (!user) {
     return res.status(404).json({ errors: [{ msg: 'User not found' }] });
   }
@@ -50,13 +50,13 @@ exports.verifyChannel = async (req, res) => {
   if (!channel) {
     return res.status(404).json({ errors: [{ msg: 'Channel not found' }] });
   }
-  const user = await User.findOne({ id: req.user.userId });
+  const user = await User.findOne({ _id: req.user.userId });
   if (channel.key === key) {
     channel.users.push(user._id);
     user.subscribedChannels.push(channel._id);
     await channel.save();
     await user.save();
-    return res.status(200).json({ isValid: true });
+    return res.status(200).json({ isValid: true, channel });
   } else {
     return res
       .status(400)

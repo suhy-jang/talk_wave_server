@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const logger = require('../utils/loggers');
 
 const validationRequest = (req, res, next) => {
   const errors = validationResult(req);
@@ -7,13 +8,15 @@ const validationRequest = (req, res, next) => {
     // type, value, msg, path, and location
     // to detail the validation errors.
 
+    logger.error(errors);
     return res.status(400).json({
       errors: errors.array().map(({ path, value, msg }) => ({
         msg: `'${path}' with value '${value}' has '${msg}' error`,
       })),
     });
+  } else {
+    next();
   }
-  next();
 };
 
 module.exports = validationRequest;
