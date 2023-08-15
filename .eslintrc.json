@@ -1,0 +1,38 @@
+{
+  "env": {
+    "node": true,
+    "commonjs": true,
+    "es2021": true
+  },
+  "extends": ["google", "eslint:recommended", "plugin:prettier/recommended"],
+  "overrides": [
+    {
+      "files": [
+        ".eslintrc.{js,cjs}"
+      ],
+      "parserOptions": {
+        "sourceType": "script"
+      }
+    }
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "tabWidth": 2
+      }
+    ],
+    "quotes": ["error", "single"],
+    "indent": ["error", 2],
+    "react/jsx-uses-vars": "error",
+    "react/jsx-uses-react": "error",
+    "linebreak-style": ["error", "unix"],
+    "semi": ["error", "always"],
+    "no-console": "warn"
+  },
+  "plugins": ["prettier", "react"]
+}

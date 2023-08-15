@@ -27,5 +27,9 @@
     "redis": "^4.6.7",
     "socket.io": "^4.7.2",
     "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.47.0",
+    "eslint-config-google": "^0.14.0"
   }
 }
