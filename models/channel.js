@@ -8,19 +8,6 @@ const channelSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  users: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-  ],
-  messages: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Message',
-    },
-  ],
   timestamp: { type: Date, default: Date.now },
 });
 

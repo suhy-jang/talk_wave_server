@@ -3,19 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true },
   name: String,
-  password: String,
-  createdChannels: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Channel',
-    },
-  ],
-  subscribedChannels: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Channel',
-    },
-  ],
+  password: { type: String, select: false },
   timestamp: { type: Date, default: Date.now },
 });
 

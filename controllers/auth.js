@@ -24,16 +24,14 @@ exports.signup = async (req, res) => {
 
   const token = generateToken(user._id);
 
-  const { password: _, ...userWithoutPassword } = user.toObject();
-
-  logger.info('User signed up with id: ' + userWithoutPassword._id);
-  res.status(201).json({ token, user: userWithoutPassword });
+  logger.info('User signed up with id: ' + user._id);
+  res.status(201).json({ token, user });
 };
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username }).select('+password');
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ errors: 'Invalid credentials' });
@@ -66,10 +64,8 @@ exports.verify = async (req, res) => {
         .json({ isValid: false, errors: [{ msg: 'User not found' }] });
     }
 
-    const { password: _, ...userWithoutPassword } = user.toObject();
-
-    logger.info('User account verified: ' + userWithoutPassword._id);
-    return res.json({ isValid: true, user: userWithoutPassword });
+    logger.info('User account verified: ' + user._id);
+    return res.json({ isValid: true, user });
   } catch (error) {
     return res
       .status(400)

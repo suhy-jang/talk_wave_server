@@ -6,7 +6,6 @@ const {
   channels,
   createChannel,
   verifyChannel,
-  subscribedChannels,
 } = require('../controllers/channel');
 const guardRun = require('../middleware/guardRun');
 
@@ -27,7 +26,5 @@ router.post(
   [body('key').isString(), body('id').isString(), validateRequest],
   guardRun(verifyChannel)
 );
-
-router.get('/subscribed', authenticateUser, guardRun(subscribedChannels));
 
 module.exports = router;

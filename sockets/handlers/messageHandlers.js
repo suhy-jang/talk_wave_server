@@ -21,13 +21,26 @@ const handleSendMessage = async ({ io, socket, message }) => {
     channel,
   });
   await newMessage.save();
-  io.emit('receiveMessage', message.content);
+
+  const foundMessage = await Message.findOne({ _id: newMessage._id })
+    .select('content timestamp creator')
+    .populate({
+      path: 'creator',
+      select: '_id name',
+    });
+  io.emit('receiveMessage', foundMessage);
 };
 
-const handleDisconnect = ({ socket }) => {
-  logger.debug('User disconnected', socket.id);
+const handleDisconnect = async ({ socket }) => {
+  const userId = socket.user.userId;
+  logger.info('User disconnected', userId);
 
-  socket.broadcast.emit('userLeft', `${socket.id} has left the chat!`);
+  const user = await User.findOne({ _id: userId });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  socket.broadcast.emit('userLeft', `${user.name} has left the chat!`);
 };
 
 module.exports = {

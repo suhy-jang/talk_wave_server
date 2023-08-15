@@ -16,6 +16,7 @@ module.exports = function (io) {
   io.on('connection', (socket) => {
     logger.info('User connected', socket.id);
 
+    // TODO: Use user ID instead of socket ID
     socket.broadcast.emit('userJoined', `${socket.id} has joined the chat!`);
 
     socket.on('typing', (message) =>

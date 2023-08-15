@@ -1,4 +1,4 @@
-const { User, Channel } = require('../models');
+const { User, Channel, PrivateSubscription } = require('../models');
 const generateKey = require('../utils/generateKey');
 const logger = require('../utils/loggers');
 
@@ -10,33 +10,25 @@ exports.channels = async (req, res) => {
   res.status(200).json({ channels });
 };
 
-exports.subscribedChannels = async (req, res) => {
-  const user = await User.findOne({ _id: req.user.userId });
-  const subscribedChannels = user.subscribedChannels;
-  res.status(200).json({ subscribedChannels });
-};
-
 exports.createChannel = async (req, res) => {
   const { name, requiresKey } = req.body;
 
+  const userId = req.user.userId;
   let key = requiresKey ? generateKey() : null;
 
-  const user = await User.findOne({ _id: req.user.userId });
-  if (!user) {
-    return res.status(404).json({ errors: [{ msg: 'User not found' }] });
-  }
   const channel = new Channel({
     name,
     key,
-    creator: user._id,
-    users: [user._id],
+    creator: userId,
   });
 
-  user.createdChannels.push(channel._id);
-  user.subscribedChannels.push(channel._id);
+  const privateSubscription = new PrivateSubscription({
+    subscriber: userId,
+    channel: channel._id,
+  });
 
   await channel.save();
-  await user.save();
+  await privateSubscription.save();
 
   logger.info(
     `Channel is created with name: ${name}, key required: ${requiresKey}`
@@ -52,8 +44,12 @@ exports.verifyChannel = async (req, res) => {
   }
   const user = await User.findOne({ _id: req.user.userId });
   if (channel.key === key) {
-    user.subscribedChannels.push(channel._id);
-    await user.save();
+    const privateSubscription = new PrivateSubscription({
+      subscriber: user._id,
+      channel: channel._id,
+    });
+
+    await privateSubscription.save();
     return res.status(200).json({ isValid: true, channel });
   } else {
     return res
