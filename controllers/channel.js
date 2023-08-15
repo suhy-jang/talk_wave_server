@@ -52,9 +52,7 @@ exports.verifyChannel = async (req, res) => {
   }
   const user = await User.findOne({ _id: req.user.userId });
   if (channel.key === key) {
-    channel.users.push(user._id);
     user.subscribedChannels.push(channel._id);
-    await channel.save();
     await user.save();
     return res.status(200).json({ isValid: true, channel });
   } else {

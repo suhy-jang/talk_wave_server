@@ -26,7 +26,7 @@ exports.signup = async (req, res) => {
 
   const { password: _, ...userWithoutPassword } = user.toObject();
 
-  logger.info('User signed up with id: ' + userWithoutPassword.id);
+  logger.info('User signed up with id: ' + userWithoutPassword._id);
   res.status(201).json({ token, user: userWithoutPassword });
 };
 
@@ -43,7 +43,7 @@ exports.login = async (req, res) => {
 
   const { password: _, ...userWithoutPassword } = user.toObject();
 
-  logger.info('User logged in with id: ' + userWithoutPassword.id);
+  logger.info('User logged in with id: ' + userWithoutPassword._id);
   res.status(200).json({ token, user: userWithoutPassword });
 };
 
@@ -68,7 +68,7 @@ exports.verify = async (req, res) => {
 
     const { password: _, ...userWithoutPassword } = user.toObject();
 
-    logger.info('User account verified: ' + userWithoutPassword.id);
+    logger.info('User account verified: ' + userWithoutPassword._id);
     return res.json({ isValid: true, user: userWithoutPassword });
   } catch (error) {
     return res
