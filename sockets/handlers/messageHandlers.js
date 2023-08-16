@@ -1,46 +1,48 @@
-const { Message, User } = require('../../models');
-const logger = require('../../utils/loggers');
+const { Message } = require('../../models');
 
-const handleTyping = ({ socket, message }) => {
-  logger.debug('user is typing');
-  socket.broadcast.emit('userTyping', message);
+const handleTyping = (socket) => {
+  const { channel } = socket.userData || {};
+  socket.to(channel).emit('userTyping');
 };
 
-const handleStopTyping = ({ socket, message }) => {
-  logger.debug('user stopped typing');
-  socket.broadcast.emit('userStoppedTyping', message);
+const handleStopTyping = (socket) => {
+  const { channel } = socket.userData || {};
+  socket.to(channel).emit('userStoppedTyping');
 };
 
-const handleSendMessage = async ({ io, socket, message }) => {
-  const { content, channel } = message;
-  logger.debug(`send message: ${message}`);
-  const user = await User.findOne({ _id: socket.user.userId });
+const handleSendMessage = async (socket, { content }) => {
+  const { channel } = socket.userData || {};
   const newMessage = new Message({
     content,
-    creator: user._id,
+    creator: socket.user.userId,
     channel,
   });
-  await newMessage.save();
+  const savedMessage = await newMessage.save();
 
-  const foundMessage = await Message.findOne({ _id: newMessage._id })
-    .select('content timestamp creator')
-    .populate({
-      path: 'creator',
-      select: '_id name',
-    });
-  io.emit('receiveMessage', foundMessage);
+  const foundMessage = await savedMessage.populate({
+    path: 'creator',
+    select: '_id name',
+  });
+  socket.emit('receiveMessage', foundMessage);
+  socket.to(channel).emit('receiveMessage', foundMessage);
 };
 
-const handleDisconnect = async ({ socket }) => {
-  const userId = socket.user.userId;
-  logger.info('User disconnected', userId);
+const handleDisconnect = async (socket) => {
+  const { userName, channel } = socket.userData || {};
+  delete socket.userData;
+  socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
+};
 
-  const user = await User.findOne({ _id: userId });
-  if (!user) {
-    throw new Error('User not found');
-  }
+const handleJoinChannel = async (socket, { userName, channel }) => {
+  socket.userData = { userName, channel };
+  socket.join(channel);
+  socket.to(channel).emit('userJoined', `${userName} has joined the chat!`);
+};
 
-  socket.broadcast.emit('userLeft', `${user.name} has left the chat!`);
+const handleLeaveChannel = async (socket) => {
+  const { userName, channel } = socket.userData || {};
+  delete socket.userData;
+  socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
 };
 
 module.exports = {
@@ -48,4 +50,6 @@ module.exports = {
   handleStopTyping,
   handleSendMessage,
   handleDisconnect,
+  handleJoinChannel,
+  handleLeaveChannel,
 };

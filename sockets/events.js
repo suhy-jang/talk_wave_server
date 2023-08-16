@@ -3,36 +3,40 @@ const {
   handleStopTyping,
   handleSendMessage,
   handleDisconnect,
+  handleJoinChannel,
+  handleLeaveChannel,
 } = require('./handlers/messageHandlers');
 const authenticateSocket = require('./middlewares/authenticateSocket');
 const errorHandler = require('./middlewares/errorHandler');
 const guardRun = require('./handlers/guardRun');
-const logger = require('../utils/loggers');
 
 module.exports = function (io) {
   io.use(authenticateSocket);
   io.use(errorHandler);
 
   io.on('connection', (socket) => {
-    logger.info('User connected', socket.id);
+    socket.on('joinChannel', async (data) => {
+      guardRun(() => handleJoinChannel(socket, data), { socket });
+    });
 
-    // TODO: Use user ID instead of socket ID
-    socket.broadcast.emit('userJoined', `${socket.id} has joined the chat!`);
+    socket.on('leaveChannel', () => {
+      guardRun(() => handleLeaveChannel(socket), { socket });
+    });
 
-    socket.on('typing', (message) =>
-      guardRun(() => handleTyping({ socket, message }), { socket })
-    );
+    socket.on('typing', () => {
+      guardRun(() => handleTyping(socket), { socket });
+    });
 
-    socket.on('stopTyping', (message) =>
-      guardRun(() => handleStopTyping({ socket, message }), { socket })
-    );
+    socket.on('stopTyping', () => {
+      guardRun(() => handleStopTyping(socket), { socket });
+    });
 
-    socket.on('sendMessage', (message) =>
-      guardRun(() => handleSendMessage({ io, socket, message }), { socket })
-    );
+    socket.on('sendMessage', async (data) => {
+      guardRun(() => handleSendMessage(socket, data), { socket });
+    });
 
-    socket.on('disconnect', () =>
-      guardRun(() => handleDisconnect({ socket }), { socket })
-    );
+    socket.on('disconnect', () => {
+      guardRun(() => handleDisconnect(socket), { socket });
+    });
   });
 };
