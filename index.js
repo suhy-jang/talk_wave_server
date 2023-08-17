@@ -68,6 +68,8 @@ const io = socketIo(server, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
+  pingTimeout: 10000,
+  pingInterval: 2500,
 });
 
 socketEvents(io);

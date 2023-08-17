@@ -11,6 +11,9 @@ const authenticateUser = (req, res, next) => {
 
   try {
     const decoded = verifyToken(token);
+    if (!decoded) {
+      throw new Error('Invalid token');
+    }
     req.user = decoded; // Allows for accessing user information in the controller later on
     next();
   } catch (error) {

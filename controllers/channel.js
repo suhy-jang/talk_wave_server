@@ -1,13 +1,24 @@
 const { User, Channel, PrivateSubscription } = require('../models');
 const generateKey = require('../utils/generateKey');
 const logger = require('../utils/loggers');
+const { REQUIRED_SUBSCRIPTION } = require('../utils/constants');
 
 exports.channels = async (req, res) => {
-  const channels = await Channel.find();
-  if (!channels) {
-    return res.status(404).json({ errors: [{ msg: 'Channel not found' }] });
-  }
-  res.status(200).json({ channels });
+  const subscribedChannels = await PrivateSubscription.find({
+    subscriber: req.user.userId,
+  }).select('channel');
+  const subscribedChannelIds = subscribedChannels.map((sub) =>
+    sub.channel._id.toString()
+  );
+  const filteredChannels = await Channel.find();
+  const requiredSubscriptionKey = REQUIRED_SUBSCRIPTION;
+  filteredChannels.forEach((channel) => {
+    if (channel.key && !subscribedChannelIds.includes(channel._id.toString())) {
+      channel.key = requiredSubscriptionKey;
+    }
+  });
+
+  res.status(200).json({ channels: filteredChannels });
 };
 
 exports.createChannel = async (req, res) => {

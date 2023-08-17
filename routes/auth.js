@@ -1,7 +1,8 @@
 const express = require('express');
 const { body } = require('express-validator');
-const validateRequest = require('../middleware/validationRequest');
 const { signup, login, verify } = require('../controllers/auth');
+const validateRequest = require('../middleware/validationRequest');
+const sanitize = require('../middleware/sanitize');
 const guardRun = require('../middleware/guardRun');
 
 const router = express.Router();
@@ -12,6 +13,7 @@ router.post(
     body('username').isLength({ min: 4 }),
     body('password').isLength({ min: 5 }),
     validateRequest,
+    sanitize(['username', 'name', 'password']),
   ],
   guardRun(signup)
 );

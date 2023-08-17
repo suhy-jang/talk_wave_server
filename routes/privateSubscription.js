@@ -1,10 +1,10 @@
 const express = require('express');
 const authenticateUser = require('../middleware/authenticateUser');
-const { subscribedChannels } = require('../controllers/privateSubscription');
+const { subscribers } = require('../controllers/privateSubscription');
 const guardRun = require('../middleware/guardRun');
 
 const router = express.Router();
 
-router.get('/channels/ids', authenticateUser, guardRun(subscribedChannels));
+router.get('/users/:channel', authenticateUser, guardRun(subscribers));
 
 module.exports = router;

@@ -1,3 +1,5 @@
+const Joi = require('joi');
+const sanitizeHtml = require('sanitize-html');
 const { Message } = require('../../models');
 
 const handleTyping = (socket) => {
@@ -10,10 +12,21 @@ const handleStopTyping = (socket) => {
   socket.to(channel).emit('userStoppedTyping');
 };
 
-const handleSendMessage = async (socket, { content }) => {
+const handleSendMessage = async (socket, data) => {
+  const schema = Joi.object({
+    content: Joi.string().required(),
+  });
+  const { error } = schema.validate(data);
+  if (error) {
+    throw new Error('Invalid message format');
+  }
+  data.content = sanitizeHtml(data.content, {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
   const { channel } = socket.userData || {};
   const newMessage = new Message({
-    content,
+    content: data.content,
     creator: socket.user.userId,
     channel,
   });
@@ -33,7 +46,16 @@ const handleDisconnect = async (socket) => {
   socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
 };
 
-const handleJoinChannel = async (socket, { userName, channel }) => {
+const handleJoinChannel = async (socket, data) => {
+  const schema = Joi.object({
+    userName: Joi.string().required(),
+    channel: Joi.string().required(),
+  });
+  const { error } = schema.validate(data);
+  if (error) {
+    throw new Error('Invalid message format');
+  }
+  const { userName, channel } = data;
   socket.userData = { userName, channel };
   socket.join(channel);
   socket.to(channel).emit('userJoined', `${userName} has joined the chat!`);

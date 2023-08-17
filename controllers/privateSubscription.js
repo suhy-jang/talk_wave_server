@@ -1,10 +1,19 @@
 const { PrivateSubscription } = require('../models');
 
-exports.subscribedChannels = async (req, res) => {
-  const channels = await PrivateSubscription.find({
-    subscriber: req.user.userId,
-  }).select('channel');
+exports.subscribers = async (req, res) => {
+  const { channel } = req.params;
+  const subscriptions = await PrivateSubscription.find({
+    channel,
+  })
+    .select('subscriber')
+    .populate({
+      path: 'subscriber',
+      select: '_id name',
+    });
 
-  const channelIds = channels.map((sub) => sub.channel);
-  res.status(200).json({ channelIds });
+  const subscribers = subscriptions.map(
+    (subscription) => subscription.subscriber
+  );
+
+  res.status(200).json({ subscribers });
 };

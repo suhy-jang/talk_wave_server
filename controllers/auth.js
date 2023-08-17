@@ -48,27 +48,17 @@ exports.login = async (req, res) => {
 exports.verify = async (req, res) => {
   const token = req.body.token;
   if (!token) {
-    return res
-      .status(400)
-      .json({ isValid: false, errors: [{ msg: 'Token is required' }] });
+    throw new Error('Token is required');
   }
 
-  try {
-    const decoded = verifyToken(token);
-    const userId = decoded.userId;
+  const decoded = verifyToken(token);
+  const userId = decoded.userId;
 
-    const user = await User.findOne({ _id: userId });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ isValid: false, errors: [{ msg: 'User not found' }] });
-    }
-
-    logger.info('User account verified: ' + user._id);
-    return res.json({ isValid: true, user });
-  } catch (error) {
-    return res
-      .status(400)
-      .json({ isValid: false, errors: [{ msg: 'Invalid token' }] });
+  const user = await User.findOne({ _id: userId });
+  if (!user) {
+    throw new Error('User not found');
   }
+
+  logger.info('User account verified: ' + user._id);
+  return res.json({ isValid: true, user });
 };

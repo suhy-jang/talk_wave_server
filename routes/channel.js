@@ -11,14 +11,14 @@ const guardRun = require('../middleware/guardRun');
 
 const router = express.Router();
 
+router.get('/', authenticateUser, guardRun(channels));
+
 router.post(
   '/',
   authenticateUser,
   [body('name').isString(), body('requiresKey').isBoolean(), validateRequest],
   guardRun(createChannel)
 );
-
-router.get('/', guardRun(channels));
 
 router.post(
   '/verify',
