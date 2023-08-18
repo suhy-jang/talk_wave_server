@@ -6,26 +6,32 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
-const mongoose = require('mongoose');
 
 const router = require('./routes/index');
 const socketEvents = require('./sockets/events');
 const errorHandlers = require('./middleware/errorHandler');
 const logger = require('./utils/loggers');
 const { redisStore } = require('./utils/redisConfig');
+const connectToDatabase = require('./database/database');
 
-const envFile =
+const envPath =
   process.env.NODE_ENV === 'development'
     ? './config/.env.development'
     : './config/.env.production';
-dotenv.config({ path: envFile });
+dotenv.config({ path: envPath });
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+connectToDatabase();
 
 const app = express();
+
+const corsConfig = {
+  origin: process.env.CLIENT_ORIGIN,
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
+
+app.use(cors(corsConfig));
 
 // Initialize sesssion storage.
 app.use(
@@ -34,6 +40,10 @@ app.use(
     secret: process.env.REDIS_SECRET,
     resave: false, // If true, it will save the session again even if it didn't change, like rewriting your name with a new pencil.
     saveUninitialized: false, // If true, it puts the new blank session card into the box right away. If false, it waits until something is written on it.
+    cookie: {
+      secure: process.env.NODE_ENV !== 'development',
+      httpOnly: true,
+    },
   })
 );
 app.use(express.json());
@@ -66,11 +76,7 @@ app.use(errorHandlers.serverInternalError); // Handle 500
 
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: process.env.CLIENT_ORIGIN,
-    methods: ['GET', 'POST'],
-    credentials: true,
-  },
+  cors: corsConfig,
   pingTimeout: 10000,
   pingInterval: 2500,
 });
