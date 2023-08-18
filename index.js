@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const session = require('express-session');
+const helmet = require('helmet');
 
 const router = require('./routes/index');
 const socketEvents = require('./sockets/events');
@@ -31,7 +32,22 @@ const corsConfig = {
   credentials: true,
 };
 
-app.use(cors(corsConfig));
+app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", process.env.CLIENT_ORIGIN],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", process.env.CLIENT_ORIGIN],
+    },
+  })
+);
+
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'interest-cohort=()');
+  next();
+});
 
 // Initialize sesssion storage.
 app.use(
@@ -47,14 +63,9 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(
-  cors({
-    origin: process.env.CLIENT_ORIGIN,
-    optionsSuccessStatus: 200,
-    methods: ['GET', 'POST', 'HEAD', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
-  })
-);
+
+app.use(cors(corsConfig));
+
 app.use(morgan('combined'));
 
 app.set('trust proxy', 1);
