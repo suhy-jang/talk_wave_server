@@ -47,10 +47,13 @@ app.use(
 );
 app.use(morgan('combined'));
 
+app.set('trust proxy', 1);
+
 if (process.env.NODE_ENV !== 'development') {
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 500, // limit each IP to 100 requests per windowMs
+    trustProxy: true, // trust 'X-Forwarded-For' header
   });
 
   app.use(limiter);
@@ -64,7 +67,7 @@ app.use(errorHandlers.serverInternalError); // Handle 500
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: process.env.CLIENT_ORIGIN,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -74,8 +77,10 @@ const io = socketIo(server, {
 
 socketEvents(io);
 
-server.listen(4000, () => {
-  logger.info('Listening on port 4000');
+const PORT = process.env.PORT || 4000;
+
+server.listen(PORT, () => {
+  logger.info(`Listening on port ${PORT}`);
 });
 
 // 'unhandledRejection' event is emitted when a Promise is rejected but no rejection handler is attached to it.

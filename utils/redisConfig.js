@@ -3,7 +3,7 @@ const { createClient } = require('redis');
 const logger = require('./loggers');
 
 // Initialize client.
-const redisClient = createClient();
+const redisClient = createClient(process.env.REDISCLOUD_URL);
 redisClient.connect().catch(logger.error);
 
 // Initialize store.
