@@ -1,14 +1,17 @@
 const Joi = require('joi');
 const sanitizeHtml = require('sanitize-html');
-const { Message } = require('../../models');
+const { Message, PrivateSubscription } = require('../../models');
+const logger = require('../../utils/loggers');
 
 const handleTyping = (socket) => {
   const { channel } = socket.userData || {};
+  logger.debug('handleTyping');
   socket.to(channel).emit('userTyping');
 };
 
 const handleStopTyping = (socket) => {
   const { channel } = socket.userData || {};
+  logger.debug('handleStopTyping');
   socket.to(channel).emit('userStoppedTyping');
 };
 
@@ -36,6 +39,7 @@ const handleSendMessage = async (socket, data) => {
     path: 'creator',
     select: '_id name',
   });
+  logger.debug('handleSendMessage');
   socket.emit('receiveMessage', foundMessage);
   socket.to(channel).emit('receiveMessage', foundMessage);
 };
@@ -43,6 +47,7 @@ const handleSendMessage = async (socket, data) => {
 const handleDisconnect = async (socket) => {
   const { userName, channel } = socket.userData || {};
   delete socket.userData;
+  logger.debug('handleDisconnect');
   socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
 };
 
@@ -57,6 +62,7 @@ const handleJoinChannel = async (socket, data) => {
   }
   const { userName, channel } = data;
   socket.userData = { userName, channel };
+  logger.debug('handleJoinChannel');
   socket.join(channel);
   socket.to(channel).emit('userJoined', `${userName} has joined the chat!`);
 };
@@ -64,7 +70,26 @@ const handleJoinChannel = async (socket, data) => {
 const handleLeaveChannel = async (socket) => {
   const { userName, channel } = socket.userData || {};
   delete socket.userData;
+  logger.debug('handleLeaveChannel');
   socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
+};
+
+const handleSyncSubscriptions = async (socket, data) => {
+  const { channel } = socket.userData;
+  const subscriptions = await PrivateSubscription.find({
+    channel,
+  })
+    .select('subscriber')
+    .populate({
+      path: 'subscriber',
+      select: '_id name',
+    });
+
+  const subscribers = subscriptions.map(
+    (subscription) => subscription.subscriber
+  );
+  logger.debug('handleSyncSubscriptions');
+  socket.to(channel).emit('subscribers', { subscribers });
 };
 
 module.exports = {
@@ -74,4 +99,5 @@ module.exports = {
   handleDisconnect,
   handleJoinChannel,
   handleLeaveChannel,
+  handleSyncSubscriptions,
 };

@@ -1,8 +1,8 @@
 const logger = require('../../utils/loggers');
 
-const guardRun = (handler, context = {}) => {
+const guardRun = async (handler, context = {}) => {
   try {
-    return handler();
+    return await handler();
   } catch (error) {
     logger.error(`Error occurred: ${error.message}`);
     if (context && context.socket) {

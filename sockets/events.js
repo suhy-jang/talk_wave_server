@@ -5,6 +5,7 @@ const {
   handleDisconnect,
   handleJoinChannel,
   handleLeaveChannel,
+  handleSyncSubscriptions,
 } = require('./handlers/messageHandlers');
 const authenticateSocket = require('./middlewares/authenticateSocket');
 const errorHandler = require('./middlewares/errorHandler');
@@ -37,6 +38,10 @@ module.exports = function (io) {
 
     socket.on('disconnect', () => {
       guardRun(() => handleDisconnect(socket), { socket });
+    });
+
+    socket.on('syncSubscriptions', (data) => {
+      guardRun(() => handleSyncSubscriptions(socket, data), { socket });
     });
   });
 };
