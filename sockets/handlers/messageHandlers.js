@@ -47,6 +47,7 @@ const handleSendMessage = async (socket, data) => {
 const handleDisconnect = async (socket) => {
   const { userName, channel } = socket.userData || {};
   delete socket.userData;
+  socket.leave(channel);
   logger.debug('handleDisconnect');
   socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
 };
@@ -70,6 +71,7 @@ const handleJoinChannel = async (socket, data) => {
 const handleLeaveChannel = async (socket) => {
   const { userName, channel } = socket.userData || {};
   delete socket.userData;
+  socket.leave(channel);
   logger.debug('handleLeaveChannel');
   socket.to(channel).emit('userLeft', `${userName} has left the chat!`);
 };

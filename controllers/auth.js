@@ -59,6 +59,5 @@ exports.verify = async (req, res) => {
     throw new Error('User not found');
   }
 
-  logger.info('User account verified: ' + user._id);
   return res.json({ isValid: true, user });
 };
