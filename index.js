@@ -32,6 +32,8 @@ const corsConfig = {
   credentials: true,
 };
 
+app.use(express.json());
+
 app.use(helmet());
 app.use(
   helmet.contentSecurityPolicy({
@@ -62,7 +64,6 @@ app.use(
     },
   })
 );
-app.use(express.json());
 
 app.use(cors(corsConfig));
 
