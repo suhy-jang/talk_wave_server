@@ -5,6 +5,7 @@ const authenticateUser = require('../middleware/authenticateUser');
 const {
   channels,
   createChannel,
+  deleteChannel,
   verifyChannel,
 } = require('../controllers/channel');
 const guardRun = require('../middleware/guardRun');
@@ -19,6 +20,8 @@ router.post(
   [body('name').isString(), body('requiresKey').isBoolean(), validateRequest],
   guardRun(createChannel)
 );
+
+router.delete('/:id', authenticateUser, guardRun(deleteChannel));
 
 router.post(
   '/verify',

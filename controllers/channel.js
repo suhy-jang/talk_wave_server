@@ -47,6 +47,14 @@ exports.createChannel = async (req, res) => {
   res.status(201).json({ channel });
 };
 
+exports.deleteChannel = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.userId;
+
+  await Channel.deleteOne({ _id: id, creator: userId });
+  return res.status(200).json({ msg: 'Channel deleted successfully' });
+};
+
 exports.verifyChannel = async (req, res) => {
   const { key, id } = req.body;
   const channel = await Channel.findOne({ _id: id });
